@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html ng-app="app">
+
+<head>
+  <meta charset="utf-8" />
+  <title>test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <!-- Angular -->
+  <script src="vendor/angular.js"></script>
+
+  <!-- leaflet -->
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/L.Control.Locate.js"></script>
+  <!--<script src="vendor/leaflet.textpath.js"></script>-->
+  <script src="vendor/leaflet.label.js"></script>
+  <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="vendor/leaflet.label.css" />
+
+  <!-- OpenLayers -->
+  <!--<script src="vendor/ol.min.js"></script>-->
+  <script src="vendor/ol-debug.js"></script>
+  <link rel="stylesheet" href="vendor/ol.css" />
+
+  <script src="vendor/turf.min.js"></script>
+
+  <link rel="stylesheet" href="asset/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="asset/css/style.css" />
+
+  <!-- Application -->
+  <script src="app/app.js"></script>
+  <script src="app/MainController.js"></script>
+<!--  <script src="app/leafletService.js"></script> -->
+  <script src="app/olService.js"></script>
+  <script src="app/searchService.js"></script>
+
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css' />
+
+</head>
+<body ng-controller="mainController as mc">
+  <div id="map"></div>
+  <div id="search">
+        <div><a class="pull-right vcenter" ng-show="mc.search.length>0" ng-click="mc.cancel()">Cancel Search</a></div>
+        <div class="input-group">
+          <span class="input-group-addon"><ng-md-icon icon="search" style="fill: #000;" size="18"></ng-md-icon></span>
+          <input type="text" class="form-control" ng-model="mc.search" ng-change="mc.find()" ng-model-options="{ debounce: 1000 }" aria-describedby="inputGroupSuccess1Status">
+          <div class="input-group-addon">
+            <span ng-show="mc.searchResults.length>0"><span>{{mc.searchResults.length}}</span> Result/s</span>
+          </div>
+        </div>
+        <div class="list" ng-show="mc.searchResults.length>0">
+          <ul>
+            <li ng-repeat="f in mc.searchResults" class="feature-result" ng-click="mc.selectFeature(f.feature);">
+              <div>
+                <span>{{f.searchText}}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+  </div>
+</body>
+</html>
