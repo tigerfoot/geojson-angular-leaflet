@@ -32,6 +32,7 @@
   <script src="app/MainController.js"></script>
 <!--  <script src="app/leafletService.js"></script> -->
   <script src="app/olService.js"></script>
+  <script src="app/geolocationService.js"></script>
   <script src="app/searchService.js"></script>
 
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css' />
@@ -39,8 +40,12 @@
 </head>
 <body ng-controller="mainController as mc">
   <div id="map"></div>
+  <div id="info" ng-show="mc.locationInfos.length>0 && mc.tracking" >
+  <ul><li ng-repeat="i in mc.locationInfos">{{i.title}} : {{i.value}}</li></ul>
+  </div>
   <div id="search">
-        <div><a class="pull-right vcenter" ng-show="mc.search.length>0" ng-click="mc.cancel()">Cancel Search</a></div>
+        <div><button class="pull-right vcenter" ng-click="mc.geolocate()" ng-class="{warning: mc.tracking, info:!mc.tracking}">Locate me</button></div>
+        <div><button class="pull-right vcenter" ng-show="mc.search.length>0" ng-click="mc.cancel()">Cancel Search</button></div>
         <div class="input-group">
           <span class="input-group-addon"><ng-md-icon icon="search" style="fill: #000;" size="18"></ng-md-icon></span>
           <input type="text" class="form-control" ng-model="mc.search" ng-change="mc.find()" ng-model-options="{ debounce: 1000 }" aria-describedby="inputGroupSuccess1Status">

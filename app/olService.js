@@ -17,14 +17,14 @@ function service($http, $q) {
   var map = {},
     defaults = {
       zoom: 12,
-      startLocation: [7.3442457442483,47.2553496968727]
+      startLocation: ol.proj.transform([7.3442457442483,47.2553496968727], 'EPSG:4326', 'EPSG:3857')
     },
     zIndex = 9999,
     selectedFeature,
     searchFeatures = [];
 
   var buildings_loaded = $q.defer();
-  console.log(buildings_loaded);
+  var building_highlight;
 
   init();
 
@@ -37,7 +37,7 @@ function service($http, $q) {
       target: 'map',
       layers: [],
       view: new ol.View({
-        center: ol.proj.transform(defaults.startLocation, 'EPSG:4326', 'EPSG:3857'),
+        center: defaults.startLocation,
         projection: 'EPSG:3857',
         zoom: defaults.zoom
       }),
@@ -56,12 +56,20 @@ function service($http, $q) {
 
   function GeoJsonLoad() {
     var data = [
-      './data/ambulance_np6_01.json',
-      './data/ambulance_nomlocal.json',
-      './data/ambulance_lieudit.json',
-      './data/ambulance_lieucommunes.json',
-      './data/ambulance_rueplace.json',
-      './data/ambulance_batiments.json',
+            './data/ambulance_route_chemin.json',
+            './data/ambulance_npa6.json',
+            './data/ambulance_nomlocal.json',
+            './data/ambulance_nomdelieu.json',
+            './data/ambulance_lieudit.json',
+            './data/ambulance_lieudenomme.json',
+            './data/ambulance_batiment.json'
+
+//       './data/ambulance_np6_01.json',
+//       './data/ambulance_nomlocal.json',
+//       './data/ambulance_lieudit.json',
+//       './data/ambulance_lieucommunes.json',
+//       './data/ambulance_rueplace.json',
+//       './data/ambulance_batiments.json',
     ];
 
     data.forEach(function(dataUrl){
@@ -82,19 +90,18 @@ function service($http, $q) {
         // important for async.
         if (source.getState() === 'ready') {
 
-          if (dataUrl == './data/ambulance_batiments.json'){
+          if (dataUrl == './data/ambulance_batiment.json'){
             $http.get(dataUrl).success (function (jsondata) {
               buildings_loaded.resolve(jsondata);
             });
             vectorLayer.setVisible(false);
-             map.on('postrender',function(){
-              if (map.getView().getZoom() >= 18 ){
-                vectorLayer.setVisible(true);
-              }else{
-                vectorLayer.setVisible(false);
-              }
-//               console.log("postrender ",map.getView().getZoom());
-             });
+              map.on('postrender',function(){
+               if (map.getView().getZoom() >= 18 ){
+                 vectorLayer.setVisible(true);
+               }else{
+                 vectorLayer.setVisible(false);
+               }
+              });
           }
 
           source.getFeatures().forEach(function(feature){
@@ -130,7 +137,9 @@ function service($http, $q) {
           } else if (properties.texte) {
             return new ol.style.Text({
               text: feature.getProperties().texte,
-              fill: new ol.style.Fill({color: 'black'})
+              fill: new ol.style.Fill({color: 'black'}),
+              textAlign: 'center',
+              textBaseline: 'ideographic'
             })
           }
         }
@@ -173,7 +182,7 @@ function service($http, $q) {
         })],
         'Polygon': [new ol.style.Style({
           stroke: new ol.style.Stroke({
-            color: 'blue',
+            color: 'rgba(0, 0, 255, 0.1)',
             lineDash: [4],
             width: 3
           }),
@@ -208,7 +217,6 @@ function service($http, $q) {
           })
         })]
               };
-
       return Geostyles[feature.getGeometry().getType()];
 
   }
@@ -223,9 +231,51 @@ function service($http, $q) {
 
   function centerOnFeature(feature){
     var coord = turf.centroid(feature.geometry).geometry.coordinates;
-    console.log(coord);
-    console.log(ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857'));
-    map.getView().setCenter(ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857'));
+    console.log(feature);
+
+
+  var geojsonObject = {
+    'type': 'FeatureCollection',
+    'crs': {
+      'type': 'name',
+      'properties': {
+        'name': 'EPSG:3857'
+      }
+    },
+    'features': [feature]
+  };
+
+  var vectorSource = new ol.source.Vector({
+    features: (new ol.format.GeoJSON()).readFeatures(geojsonObject, {dataProjection: 'EPSG:3857'})
+  });
+
+//  vectorSource.addFeature(new ol.Feature(new ol.geom.Circle(coord, 1)));
+//    console.log(ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857'));
+
+    if (building_highlight){
+      map.removeLayer(building_highlight);
+    }
+
+    var vectorLayer = new ol.layer.Vector({
+      source: vectorSource,
+      style: [new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'red',
+            lineDash: [2],
+            width: 4
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 0, 0, 0.1)'
+          })
+        })]
+
+    });
+
+    // Add vectory layer to map
+    map.addLayer(vectorLayer);
+
+    map.getView().setCenter(coord);
+//    map.getView().setCenter(ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857'));
     map.getView().setZoom(19);
   }
 }

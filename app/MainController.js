@@ -10,11 +10,22 @@ angular
 
 //Controller.$inject = [];
 
-function Controller(mapService, searchService) {
+function Controller($scope, $timeout, mapService, geolocationService, searchService) {
   var vm = this;
+  $scope.map = mapService.map;
 
   vm.search = '';
   vm.searchResults = [];
+
+  vm.locationInfos = [];
+  vm.tracking = false;
+
+  geolocationService.init($scope.map);
+  $scope.$on('updateGeoLocationInfos', function(evt,locationInfos){
+    vm.locationInfos = locationInfos;
+    $timeout();
+  });
+
 
   vm.find = function (){
       vm.searchResults = searchService.search(vm.search);
@@ -27,6 +38,11 @@ function Controller(mapService, searchService) {
 
   vm.selectFeature = function (feature){
       mapService.centerOnFeature(feature);
+  };
+
+  vm.geolocate = function (){
+    geolocationService.setTracking();
+    vm.tracking = ! vm.tracking;
   };
 
 }
