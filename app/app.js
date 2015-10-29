@@ -2,5 +2,4 @@
  * Main app module
  */
 angular
-  .module('app', [
-  ]);
+  .module('app', ['ui.bootstrap']);

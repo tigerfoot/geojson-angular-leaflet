@@ -12,9 +12,9 @@ html, body {
 
 #search{
   position:absolute;
-  top: 28px;
-  min-width: 220px;
-  min-height: 38px;
+  top: 32px;
+  min-width: 25%;
+  min-height: 44px;
   margin: 0px 50%;
   z-index: 1000;
 }
@@ -30,3 +30,24 @@ html, body {
 
 .info {background-color: lightgrey;}
 .warning {background-color: orange;}
+
+/* Apps specific ol Control */
+
+.rotate-north {
+  top: 165px;
+  left: .5em;
+}
+.ol-touch .rotate-north {
+  top: 180px;
+}
+
+.locate-me {
+  position: absolute;
+  top: 115px;
+  left: 0.5em;
+}
+.ol-touch .locate-me {
+  top: 140px;
+}
+
+/*.list-group-item {width: 320px; font-size: x-small; padding: 2px;}*/

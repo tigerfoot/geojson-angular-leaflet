@@ -16,6 +16,7 @@ function Controller($scope, $timeout, mapService, geolocationService, searchServ
 
   vm.search = '';
   vm.searchResults = [];
+  vm.status = {showResults: false};
 
   vm.locationInfos = [];
   vm.tracking = false;
@@ -29,6 +30,8 @@ function Controller($scope, $timeout, mapService, geolocationService, searchServ
 
   vm.find = function (){
       vm.searchResults = searchService.search(vm.search);
+      vm.status.showResults = (vm.searchResults.length > 0) ? true : false;
+      console.log ( 'show result is ' + vm.status.showResults );
   };
 
   vm.cancel = function (){

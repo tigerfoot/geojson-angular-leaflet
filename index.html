@@ -2,12 +2,27 @@
 <html ng-app="app">
 
 <head>
-  <meta charset="utf-8" />
-  <title>test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Language" content="fr">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="lang" content="fr">
+<meta http-equiv="imagetoolbar" content="no">
+<meta http-equiv="robots" content="noindex, nofollow, noimageindex, nosnippet">
+<title>web mobile mapping apps</title>
+<link href="vendor/bootstrap/css/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="asset/css/font-awesome.min.css" media="screen" rel="stylesheet" type="text/css">
+
+<link href="asset/images/apple-touch-icon-144x144-precomposed.png" rel="asset/images/apple-touch-icon-precomposed" sizes="144x144" />
+<link href="asset/images/apple-touch-icon-114x114-precomposed.png" rel="asset/images/apple-touch-icon-precomposed" sizes="114x114" />
+<link href="asset/images/apple-touch-icon-72x72-precomposed.png"   rel="asset/images/apple-touch-icon-precomposed" sizes="72x72" />
+<link href="asset/images/apple-touch-icon-57x57-precomposed.png"   rel="asset/images/apple-touch-icon-precomposed" />
 
   <!-- Angular -->
   <script src="vendor/angular.js"></script>
+  <script src="vendor/ui-bootstrap-0.14.2.min.js"></script>
 
   <!-- leaflet -->
   <script src="vendor/leaflet.js"></script>
@@ -24,7 +39,7 @@
 
   <script src="vendor/turf.min.js"></script>
 
-  <link rel="stylesheet" href="asset/css/font-awesome.min.css" />
+
   <link rel="stylesheet" href="asset/css/style.css" />
 
   <!-- Application -->
@@ -33,6 +48,7 @@
 <!--  <script src="app/leafletService.js"></script> -->
   <script src="app/olService.js"></script>
   <script src="app/geolocationService.js"></script>
+  <script src="app/geolocateDirective.js"></script>
   <script src="app/searchService.js"></script>
 
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css' />
@@ -44,24 +60,27 @@
   <ul><li ng-repeat="i in mc.locationInfos">{{i.title}} : {{i.value}}</li></ul>
   </div>
   <div id="search">
-        <div><button class="pull-right vcenter" ng-click="mc.geolocate()" ng-class="{warning: mc.tracking, info:!mc.tracking}">Locate me</button></div>
-        <div><button class="pull-right vcenter" ng-show="mc.search.length>0" ng-click="mc.cancel()">Cancel Search</button></div>
-        <div class="input-group">
-          <span class="input-group-addon"><ng-md-icon icon="search" style="fill: #000;" size="18"></ng-md-icon></span>
-          <input type="text" class="form-control" ng-model="mc.search" ng-change="mc.find()" ng-model-options="{ debounce: 1000 }" aria-describedby="inputGroupSuccess1Status">
-          <div class="input-group-addon">
-            <span ng-show="mc.searchResults.length>0"><span>{{mc.searchResults.length}}</span> Result/s</span>
-          </div>
-        </div>
-        <div class="list" ng-show="mc.searchResults.length>0">
-          <ul>
-            <li ng-repeat="f in mc.searchResults" class="feature-result" ng-click="mc.selectFeature(f.feature);">
-              <div>
-                <span>{{f.searchText}}</span>
-              </div>
-            </li>
-          </ul>
-        </div>
+    <div class="input-group">
+      <input type="text" class="form-control" ng-model="mc.search" ng-change="mc.find()" ng-model-options="{ debounce: 1000 }" aria-describedby="inputGroupSuccess1Status">
+    <div class="input-group-addon">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" ng-show="mc.search.length>0" ng-click="mc.cancel()"><i class="fa fa-remove"></i></button>
+      </span>
+    </div>
   </div>
+
+  <div class="btn-group" uib-dropdown uib-keyboard-nav ng-show="mc.searchResults.length>0"  is-open="mc.status.showResults">
+      <button id="simple-btn-keyboard-nav" type="button" class="btn btn-primary" uib-dropdown-toggle>
+      <span ng-show="mc.searchResults.length>0"><span>{{mc.searchResults.length}}</span> Result/s</span>
+      <span class="caret"></span>
+      </button>
+      <ul class="uib-dropdown-menu" role="menu" aria-labelledby="simple-btn-keyboard-nav">
+        <li role="menuitem" ng-repeat="f in mc.searchResults" ng-click="mc.selectFeature(f.feature);"><a href="#">{{f.searchText}}</a></li>
+      </ul>
+  </div>
+  </div>
+
+<div id="buttons"><div geolocate></div></div>
+
 </body>
 </html>
