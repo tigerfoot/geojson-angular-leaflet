@@ -29,12 +29,14 @@
             ],
         };
 
-        var buildings_loaded = $q.defer();
-        var building_highlight;
+        var buildingLayer;
 
         init();
 
-        return {map: map, loadBuildings: loadBuildings, centerOnFeature: centerOnFeature};
+        return {
+            map: map,
+            centerOnFeature: centerOnFeature
+        };
 
         function init() {
 
@@ -118,10 +120,6 @@
             return vectorLayer;
         }
 
-        function loadBuildings() {
-            return buildings_loaded.promise;
-        }
-
         function onLocationEvent(e) {
             console.log(e)
         }
@@ -144,11 +142,11 @@
                 features: (new ol.format.GeoJSON()).readFeatures(geojsonObject, {dataProjection: 'EPSG:3857'})
             });
 
-            if (building_highlight) {
-                map.removeLayer(building_highlight);
+            if (buildingLayer) {
+                map.removeLayer(buildingLayer);
             }
 
-            var vectorLayer = new ol.layer.Vector({
+            buildingLayer = new ol.layer.Vector({
                 source: vectorSource,
                 style: [new ol.style.Style({
                         stroke: new ol.style.Stroke({
@@ -163,7 +161,7 @@
 
             });
 
-            map.addLayer(vectorLayer);
+            map.addLayer(buildingLayer);
             map.getView().setCenter(coord);
             map.getView().setZoom(19);
         }

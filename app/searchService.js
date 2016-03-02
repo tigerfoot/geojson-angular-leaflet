@@ -8,24 +8,11 @@
             .module('app')
             .factory('searchService', service);
 
-    function service(mapService) {
+    function service($http) {
         var searchFeatures = [];
 
-        mapService.loadBuildings().then(function (buildings) {
-
-            buildings.features.forEach(function (feature) {
-                var key;
-                var searchText = [];
-                var properties = feature.properties;
-                for (key in properties) {
-                    searchText.push(properties[key].toString());
-                }
-                searchFeatures.push({
-                    feature: feature,
-                    searchText: searchText.join(', ')
-                });
-            });
-
+        $http.get('/searches.json').then(function (data) {
+            searchFeatures = data.data;
         });
 
         return {search: search};

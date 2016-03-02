@@ -31,7 +31,6 @@
         vm.find = function () {
             vm.searchResults = searchService.search(vm.search);
             vm.status.showResults = (vm.searchResults.length > 0) ? true : false;
-            console.log('show result is ' + vm.status.showResults);
         };
 
         vm.cancel = function () {
