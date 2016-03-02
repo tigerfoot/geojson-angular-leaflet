@@ -5,9 +5,13 @@
         data: {
             all: [
                 'lieudenomme.json',
-                'lieudit.json',
                 'npa6.json',
+            ],
+            '13': [
                 'route_chemin.json',
+            ],
+            '15': [
+                'lieudit.json',
             ],
             '18': [
                 'numerobatiment.json',
