@@ -1,3 +1,5 @@
+/* global ol */
+
 (function () {
     'use strict';
 
@@ -14,22 +16,21 @@
 
         // check openlayers is available on service instantiation
         // this can be handled with Require later on
-        if (!ol)
+        if (!ol) {
             return {};
+        }
 
-        function init(vmap) {
+        function init(olMap) {
 
-            map = vmap;
-            // Geolocation Control
-            geolocation = new ol.Geolocation(/** @type {olx.GeolocationOptions} */
-                    ({
-                        projection: map.getView().getProjection(),
-                        trackingOptions: {
-                            maximumAge: 10000,
-                            enableHighAccuracy: true,
-                            timeout: 600000
-                        }
-                    }));
+            map = olMap;
+            geolocation = new ol.Geolocation({
+                projection: map.getView().getProjection(),
+                trackingOptions: {
+                    maximumAge: 10000,
+                    enableHighAccuracy: true,
+                    timeout: 600000
+                }
+            });
 
             // Listen to position changes
             geolocation.on('change', function (evt) {
@@ -43,8 +44,8 @@
             });
 
             geolocation.on('error', function () {
-                alert('geolocation error');
-                // FIXME we should remove the coordinates in positions
+                console.error('geolocationService encountered a problem');
+                $rootScope.$broadcast('updateGeoLocationInfos', []);
             });
 
             // change center and rotation before render
@@ -61,23 +62,22 @@
 
         }
 
-        // postcompose callback
-        function render() {
-            map.render();
-        }
-
-
         function setTracking() {
             var onoff = geolocation.getTracking();
-            geolocation.setTracking(!onoff); // Start position tracking
+            geolocation.setTracking(!onoff);
             if (!onoff) {
                 $rootScope.$broadcast('updateGeoLocationInfos', []);
             }
-            map.on('postcompose', render);
+            map.on('postcompose', function () {
+                map.render();
+            });
             map.render();
         }
 
-        return {setTracking: setTracking, init: init};
+        return {
+            setTracking: setTracking,
+            init: init
+        };
 
     }
 
