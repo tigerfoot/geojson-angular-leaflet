@@ -18,16 +18,6 @@
 
         // convenience reference
         var map = {};
-        var defaults = {
-            zoom: 11,
-            startLocation: [805493.4040691875, 5971642.834779395],
-            extent: [
-                732113.8569154183,
-                5929143.847052837,
-                878872.9512229566,
-                6014141.822505953
-            ],
-        };
 
         var buildingLayer;
 
@@ -70,19 +60,17 @@
                 target: 'map',
                 layers: [],
                 view: new ol.View({
-                    center: defaults.startLocation,
+                    center: inGlobalOptions.defaults.startLocation,
                     projection: 'EPSG:3857',
-                    zoom: defaults.zoom
+                    zoom: inGlobalOptions.defaults.zoom
                 }),
                 controls: ol.control.defaults().extend([
-                    new ol.control.ZoomToExtent({extent: defaults.extent}),
+                    new ol.control.ZoomToExtent({extent: inGlobalOptions.defaults.extent}),
                     new RotateNorthControl(),
                 ])
             });
 
             loadData();
-
-            map.on('locationfound', onLocationEvent);
         }
 
 
@@ -118,10 +106,6 @@
             map.addLayer(vectorLayer);
 
             return vectorLayer;
-        }
-
-        function onLocationEvent(e) {
-            console.log(e)
         }
 
         function centerOnFeature(feature) {
