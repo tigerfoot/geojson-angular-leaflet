@@ -7,12 +7,12 @@
      * Map Service
      */
     angular.module('app')
-            .factory('mapService', mapService);
+            .factory('ol3Service', ol3Service);
 
-    function mapService($q, styleService, inGlobalOptions) {
+    function ol3Service($q, styleService, inGlobalOptions) {
         // check openlayers is available on service instantiation
         // this can be handled with Require later on
-        if (!ol) {
+        if (!ol || inGlobalOptions.type !== 'ol3') {
             return {};
         }
 

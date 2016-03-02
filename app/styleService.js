@@ -2,12 +2,19 @@
     angular.module('app')
             .factory('styleService', styleService);
 
-    function styleService() {
+    function styleService(inGlobalOptions) {
+        var styleFunction;
+        if (inGlobalOptions.type === 'ol3') {
+            styleFunction = ol3StyleFunction;
+        } else if (inGlobalOptions.type === 'leaflet') {
+            styleFunction = leafletStyleFunction;
+        }
+
         return {
             styleFunction: styleFunction
         };
 
-        function styleFunction(feature, resolution) {
+        function ol3StyleFunction(feature, resolution) {
             function getTextStyle() {
                 if (feature.getProperties()) {
                     var properties = feature.getProperties();
@@ -100,6 +107,28 @@
                     })]
             };
             return Geostyles[feature.getGeometry().getType()];
+        }
+
+
+        function leafletStyleFunction(feature) {
+            switch (feature.geometry.type) {
+                case 'MultiLineString':
+                case 'LineString':
+                    console.log('line')
+                    return {
+                        color: '#FF0000',
+                        width: 1
+                    };
+                case 'MultiPolygon':
+                case 'Polygon':
+                    console.log('polygon')
+                    return {
+                        color: '#0000FF',
+                        fillColor: '#0000AA',
+                        fillOpacity: 0.1,
+                        width: 3,
+                    };
+            }
         }
     }
 })();
