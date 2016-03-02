@@ -1,3 +1,5 @@
+/* global ol, turf */
+
 (function() {
 'use strict';
 
@@ -8,7 +10,7 @@ angular
   .module('app')
   .factory('mapService', service);
 
-function service($http, $q, geolocationService) {
+function service($http, $q, geolocationService, styleService, inGlobalOptions) {
   // check openlayers is available on service instantiation
   // this can be handled with Require later on
   if (!ol) return {};
@@ -106,177 +108,49 @@ function service($http, $q, geolocationService) {
           ])
     });
 
-    GeoJsonLoad();
+    loadData();
 
     map.on('locationfound', onLocationEvent);
   }
 
 
-  function GeoJsonLoad() {
-    var data = [
-            './data/ambulance_route_chemin.json',
-            './data/ambulance_npa6.json',
-            './data/ambulance_nomlocal.json',
-            './data/ambulance_nomdelieu.json',
-            './data/ambulance_lieudit.json',
-            './data/ambulance_lieudenomme.json',
-            './data/ambulance_batiment.json'
+  function loadData() {
+    inGlobalOptions.data.all.forEach(_addNewVectorLayerToMap);
 
-//       './data/ambulance_np6_01.json',
-//       './data/ambulance_nomlocal.json',
-//       './data/ambulance_lieudit.json',
-//       './data/ambulance_lieucommunes.json',
-//       './data/ambulance_rueplace.json',
-//       './data/ambulance_batiments.json',
-    ];
-
-    data.forEach(function(dataUrl){
-
-      var vectorLayer = new ol.layer.Vector({
-        source: new ol.source.Vector({
-          url: dataUrl,
-          format: new ol.format.GeoJSON(),
-        }),
-        style: styleFunction
-      });
-
-      // Add vectory layer to map
-      map.addLayer(vectorLayer);
-
-      vectorLayer.getSource().on('change', function(evt) {
-        var source = evt.target;
-        // important for async.
-        if (source.getState() === 'ready') {
-
-          if (dataUrl == './data/ambulance_batiment.json'){
-            $http.get(dataUrl).success (function (jsondata) {
-              buildings_loaded.resolve(jsondata);
+    Object.keys(inGlobalOptions.data).filter(function (zoomLevel) {
+        return zoomLevel !== 'all';
+    }).forEach(function (zoomLevel) {
+        inGlobalOptions.data[zoomLevel].forEach(function (fileName) {
+            var vectorLayer = _addNewVectorLayerToMap(fileName);
+            vectorLayer.getSource().on('change', function (evt) {
+                var source = evt.target;
+                // Required due to async operations
+                if (source.getState() === 'ready') {
+                    vectorLayer.setVisible(false);
+                    map.on('postrender', function () {
+                        if (map.getView().getZoom() >= zoomLevel) {
+                            vectorLayer.setVisible(true);
+                        } else {
+                            vectorLayer.setVisible(false);
+                        }
+                    });
+                }
             });
-            vectorLayer.setVisible(false);
-              map.on('postrender',function(){
-               if (map.getView().getZoom() >= 18 ){
-                 vectorLayer.setVisible(true);
-               }else{
-                 vectorLayer.setVisible(false);
-               }
-              });
-          }
-
-          source.getFeatures().forEach(function(feature){
-            var searchText = [];
-            var properties = feature.getProperties();
-            for (name in properties ){
-              if (properties.hasOwnProperty(name) && name !== 'geometry'){
-                searchText.push(properties[name].toString());
-              }
-            }
-            searchFeatures.push({
-              feature: feature,
-              searchText: searchText.join(', ')
-            })
-          });
-
-        }
-
-      });
+        });
     });
   }
 
-  function styleFunction (feature, resolution) {
-
-      function getTextStyle() {
-        if (feature.getProperties()) {
-          var properties = feature.getProperties();
-          if (properties.numero) {
-            return new ol.style.Text({
-              text: feature.getProperties().numero,
-              fill: new ol.style.Fill({color: 'black'})
-            })
-          } else if (properties.texte) {
-            return new ol.style.Text({
-              text: feature.getProperties().texte,
-              fill: new ol.style.Fill({color: 'black'}),
-              textAlign: 'center',
-              textBaseline: 'ideographic'
-            })
-          }
-        }
-      }
-
-      var image = new ol.style.Circle({
-        radius: 5,
-        fill: null,
-        stroke: new ol.style.Stroke({color: 'red', width: 1})
+  function _addNewVectorLayerToMap(fileName) {
+      var vectorLayer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+          url: inGlobalOptions.dataFolder + fileName,
+          format: new ol.format.GeoJSON(),
+        }),
+        style: styleService.styleFunction
       });
-      var Geostyles = {
-        'Point': [new ol.style.Style({
-          image: image
-        })],
-        'LineString': [new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 1
-          }),
-          text: getTextStyle()
-        })
-        ],
-        'MultiLineString': [new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 1
-          })
-        })],
-        'MultiPoint': [new ol.style.Style({
-          image: image
-        })],
-        'MultiPolygon': [new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'yellow',
-            width: 1
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 0, 0.1)'
-          })
-        })],
-        'Polygon': [new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'rgba(0, 0, 255, 0.1)',
-            lineDash: [4],
-            width: 3
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(0, 0, 255, 0.1)'
-          }),
-          text: getTextStyle()
-        })],
-        'GeometryCollection': [new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'magenta',
-            width: 2
-          }),
-          fill: new ol.style.Fill({
-            color: 'magenta'
-          }),
-          image: new ol.style.Circle({
-            radius: 10,
-            fill: null,
-            stroke: new ol.style.Stroke({
-              color: 'magenta'
-            })
-          })
-        })],
-        'Circle': [new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'red',
-            width: 2
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255,0,0,0.2)'
-          })
-        })]
-              };
-      return Geostyles[feature.getGeometry().getType()];
+      map.addLayer(vectorLayer);
 
+      return vectorLayer;
   }
 
   function loadBuildings() {

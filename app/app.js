@@ -1,5 +1,6 @@
 /**
  * Main app module
  */
-angular
-  .module('app', ['ui.bootstrap']);
+(function () {
+    angular.module('app', ['ui.bootstrap']);
+})();
