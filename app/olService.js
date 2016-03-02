@@ -19,8 +19,14 @@
         // convenience reference
         var map = {};
         var defaults = {
-            zoom: 12,
-            startLocation: ol.proj.transform([7.3442457442483, 47.2553496968727], 'EPSG:4326', 'EPSG:3857')
+            zoom: 11,
+            startLocation: [805493.4040691875, 5971642.834779395],
+            extent: [
+                732113.8569154183,
+                5929143.847052837,
+                878872.9512229566,
+                6014141.822505953
+            ],
         };
 
         var buildings_loaded = $q.defer();
@@ -60,22 +66,16 @@
             // map initialisation
             map = new ol.Map({
                 target: 'map',
-                layers: [
-                    new ol.layer.Tile({
-                        source: new ol.source.MapQuest({layer: 'osm'})
-                    })
-                ],
+                layers: [],
                 view: new ol.View({
                     center: defaults.startLocation,
                     projection: 'EPSG:3857',
                     zoom: defaults.zoom
                 }),
-                controls:
-                        ol.control.defaults().extend(
-                        [
-                            new ol.control.ZoomToExtent(),
-                            new RotateNorthControl(),
-                        ])
+                controls: ol.control.defaults().extend([
+                    new ol.control.ZoomToExtent({extent: defaults.extent}),
+                    new RotateNorthControl(),
+                ])
             });
 
             loadData();
@@ -91,32 +91,27 @@
                 return zoomLevel !== 'all';
             }).forEach(function (zoomLevel) {
                 inGlobalOptions.data[zoomLevel].forEach(function (fileName) {
-                    var vectorLayer = _addVectorLayerFromDataToMap(fileName);
-                    vectorLayer.getSource().on('change', function (evt) {
-                        var source = evt.target;
-                        // Required due to async operations
-                        if (source.getState() === 'ready') {
+                    var vectorLayer = _addVectorLayerFromDataToMap(fileName, false);
+                    map.on('postrender', function () {
+                        if (map.getView().getZoom() >= zoomLevel) {
+                            vectorLayer.setVisible(true);
+                        } else {
                             vectorLayer.setVisible(false);
-                            map.on('postrender', function () {
-                                if (map.getView().getZoom() >= zoomLevel) {
-                                    vectorLayer.setVisible(true);
-                                } else {
-                                    vectorLayer.setVisible(false);
-                                }
-                            });
                         }
                     });
                 });
             });
         }
 
-        function _addVectorLayerFromDataToMap(fileName) {
+        function _addVectorLayerFromDataToMap(fileName, visible) {
+            visible = visible === undefined ? true : visible;
             var vectorLayer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                     url: inGlobalOptions.dataFolder + fileName,
                     format: new ol.format.GeoJSON(),
                 }),
-                style: styleService.styleFunction
+                style: styleService.styleFunction,
+                visible: visible,
             });
             map.addLayer(vectorLayer);
 
