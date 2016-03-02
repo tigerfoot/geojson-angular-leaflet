@@ -6,25 +6,22 @@
     /**
      * Map Service
      */
-    angular
-            .module('app')
-            .factory('mapService', service);
+    angular.module('app')
+            .factory('mapService', mapService);
 
-    function service($http, $q, geolocationService, styleService, inGlobalOptions) {
+    function mapService($q, styleService, inGlobalOptions) {
         // check openlayers is available on service instantiation
         // this can be handled with Require later on
-        if (!ol)
+        if (!ol) {
             return {};
+        }
 
         // convenience reference
-        var map = {},
-                defaults = {
-                    zoom: 12,
-                    startLocation: ol.proj.transform([7.3442457442483, 47.2553496968727], 'EPSG:4326', 'EPSG:3857')
-                },
-        zIndex = 9999,
-                selectedFeature,
-                searchFeatures = [];
+        var map = {};
+        var defaults = {
+            zoom: 12,
+            startLocation: ol.proj.transform([7.3442457442483, 47.2553496968727], 'EPSG:4326', 'EPSG:3857')
+        };
 
         var buildings_loaded = $q.defer();
         var building_highlight;
@@ -35,7 +32,7 @@
 
         function init() {
 
-            var RotateNorthControl = function (opt_options) {
+            function RotateNorthControl(opt_options) {
                 var options = opt_options || {};
 
                 var button = document.createElement('button');
@@ -57,36 +54,8 @@
                     element: element,
                     target: options.target
                 });
-
-            };
+            }
             ol.inherits(RotateNorthControl, ol.control.Control);
-
-//     var LocateMeControl = function(opt_options) {
-//       var options = opt_options || {};
-//
-//       var button = document.createElement('button');
-//       button.innerHTML = 'L';
-//
-//       var this_ = this;
-//       var handleLocateMe = function(e) {
-//           geolocationService.setTracking();
-//       };
-//
-//       button.addEventListener('click', handleLocateMe, false);
-//       button.addEventListener('touchstart', handleLocateMe, false);
-//
-//       var element = document.createElement('div');
-//       element.className = 'locate-me ol-unselectable ol-control';
-//       element.appendChild(button);
-//
-//       ol.control.Control.call(this, {
-//         element: element,
-//         target: options.target
-//       });
-//
-//     };
-//     ol.inherits(LocateMeControl, ol.control.Control);
-
 
             // map initialisation
             map = new ol.Map({
@@ -116,13 +85,13 @@
 
 
         function loadData() {
-            inGlobalOptions.data.all.forEach(_addNewVectorLayerToMap);
+            inGlobalOptions.data.all.forEach(_addVectorLayerFromDataToMap);
 
             Object.keys(inGlobalOptions.data).filter(function (zoomLevel) {
                 return zoomLevel !== 'all';
             }).forEach(function (zoomLevel) {
                 inGlobalOptions.data[zoomLevel].forEach(function (fileName) {
-                    var vectorLayer = _addNewVectorLayerToMap(fileName);
+                    var vectorLayer = _addVectorLayerFromDataToMap(fileName);
                     vectorLayer.getSource().on('change', function (evt) {
                         var source = evt.target;
                         // Required due to async operations
@@ -141,7 +110,7 @@
             });
         }
 
-        function _addNewVectorLayerToMap(fileName) {
+        function _addVectorLayerFromDataToMap(fileName) {
             var vectorLayer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                     url: inGlobalOptions.dataFolder + fileName,
@@ -164,8 +133,6 @@
 
         function centerOnFeature(feature) {
             var coord = turf.centroid(feature.geometry).geometry.coordinates;
-            console.log(feature);
-
 
             var geojsonObject = {
                 'type': 'FeatureCollection',
@@ -181,9 +148,6 @@
             var vectorSource = new ol.source.Vector({
                 features: (new ol.format.GeoJSON()).readFeatures(geojsonObject, {dataProjection: 'EPSG:3857'})
             });
-
-            //  vectorSource.addFeature(new ol.Feature(new ol.geom.Circle(coord, 1)));
-            //    console.log(ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857'));
 
             if (building_highlight) {
                 map.removeLayer(building_highlight);
@@ -204,11 +168,8 @@
 
             });
 
-            // Add vectory layer to map
             map.addLayer(vectorLayer);
-
             map.getView().setCenter(coord);
-            //    map.getView().setCenter(ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857'));
             map.getView().setZoom(19);
         }
     }
