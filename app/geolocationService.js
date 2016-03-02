@@ -32,25 +32,17 @@
                     , {title: 'speed', value: geolocation.getSpeed() || 0}
                 ];
                 $rootScope.$broadcast('updateGeoLocationInfos', infos);
+                var view = map.getView();
+                view.setCenter(geolocation.getPosition());
+                if (view.getZoom() < 15) {
+                    view.setZoom(18);
+                }
             });
 
             geolocation.on('error', function () {
                 console.error('geolocationService encountered a problem');
                 $rootScope.$broadcast('updateGeoLocationInfos', []);
             });
-
-            // change center and rotation before render
-            map.beforeRender(function (map, frameState) {
-                if (frameState !== null) {
-                    var gp = geolocation.getPosition();
-                    var view = frameState.viewState;
-                    if (gp && geolocation.getTracking()) {
-                        view.center = gp;
-                    }
-                }
-                return true; // Force animation to continue
-            });
-
         }
 
         function setTracking() {
@@ -59,10 +51,6 @@
             if (!onoff) {
                 $rootScope.$broadcast('updateGeoLocationInfos', []);
             }
-            map.on('postcompose', function () {
-                map.render();
-            });
-            map.render();
         }
 
         return {
