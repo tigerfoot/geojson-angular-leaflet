@@ -11,7 +11,7 @@
     function service($http) {
         var searchFeatures = [];
 
-        $http.get('/searches.json').then(function (data) {
+        $http.get('./searches.json').then(function (data) {
             searchFeatures = data.data;
         });
 
