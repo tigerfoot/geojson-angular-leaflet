@@ -27,11 +27,22 @@
                 }
             }
 
-            var image = new ol.style.Circle({
+            var image;
+            if ( feature.getProperties().code_valide === 0 ) {
+              image = new ol.style.Circle({
                 radius: 5,
-                fill: null,
-                stroke: new ol.style.Stroke({color: 'red', width: 1})
-            });
+                fill: new ol.style.Fill({color: 'orange'}),
+                                              stroke: new ol.style.Stroke({color: 'red', width: 1})
+              });
+            } else {
+              image = new ol.style.RegularShape({
+                points: 4,
+                radius: 5,
+                fill: new ol.style.Fill({color: 'orange'}),
+                                                 stroke: new ol.style.Stroke({color: 'red', width: 1})
+              });
+            }
+
             var Geostyles = {
                 'Point': [new ol.style.Style({
                         image: image
